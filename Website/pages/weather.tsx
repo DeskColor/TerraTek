@@ -6,6 +6,13 @@ import axios from "axios";
 import React from "react";
 import Image from "next/image"; // Import next/image for optimized images
 //import Plotly from "plotly.js-dist";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Button,
+} from "@heroui/react";
 
 
 
@@ -88,7 +95,7 @@ const Weather: NextPage = () => {
   const [forecast, setForecast] = useState<Forecast | null>(null);
   type SensorType = "Wind Speed" | "Wind Direction" | "Humidity" | "Pressure" | "Temperature" | "Luminescence" | "Rainfall";
   const [selectedSensor, setSelectedSensor] = useState<SensorType>("Wind Speed");
-  const [forecastPeriod, setForecastPeriod] = useState<string>("7DAY");
+  const [forecastPeriod, setForecastPeriod] = useState<string>("7 Day Forecast");
   const location = "Amarillo"; // Default location
 
   const API_KEY = "cd1abd4ac4484d84b5455301251903"; // WeatherAPI key
@@ -377,13 +384,13 @@ const Weather: NextPage = () => {
     try {
       let forecastUrl = "";
       switch (forecastPeriod) {
-        case "HOURLY":
+        case "Hourly Forecast":
           forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location}&days=1`;
           break;
-        case "3DAY":
+        case "3 Day Forecast":
           forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location}&days=3`;
           break;
-        case "7DAY":
+        case "7 Day Forecast":
           forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location}&days=7`;
           break;
         default:
@@ -427,6 +434,7 @@ const Weather: NextPage = () => {
           plot_bgcolor: "transparent",
           font: { color: "black" },
         }}
+        config={{ displayModeBar: false, responsive: true }}
         useResizeHandler
         style={{ width: "100%", height: "200px" }}
       />
@@ -438,7 +446,7 @@ const Weather: NextPage = () => {
 
     let dataToRender: (ForecastDay | HourlyForecast)[] = [];
 
-    if (forecastPeriod === "HOURLY") {
+    if (forecastPeriod === "Hourly Forecast") {
       // Extract hourly data for the first day in the forecast
       dataToRender = forecast.forecast.forecastday[0]?.hour || [];
     } else {
@@ -459,8 +467,8 @@ const Weather: NextPage = () => {
               </h4>
               <Image
                 src={`https:${isHourly
-                    ? (item as HourlyForecast).condition.icon
-                    : (item as ForecastDay).day.condition.icon
+                  ? (item as HourlyForecast).condition.icon
+                  : (item as ForecastDay).day.condition.icon
                   }`}
                 alt={
                   isHourly
@@ -471,18 +479,18 @@ const Weather: NextPage = () => {
                 height={48}
                 className="mx-auto"
               />
-              <p>
+                <p>
                 {isHourly
-                  ? (item as HourlyForecast).temp_c
-                  : (item as ForecastDay).day.avgtemp_c}
-                °C
-              </p>
-              <p>
+                  ? (((item as HourlyForecast).temp_c * 9) / 5 + 32).toFixed(2)
+                  : (((item as ForecastDay).day.avgtemp_c * 9) / 5 + 32).toFixed(2)}
+                °F
+                </p>
+                <p>
                 Wind:{" "}
                 {isHourly
-                  ? (item as HourlyForecast).wind_kph
-                  : (item as ForecastDay).day.maxwind_kph}{" "}
-                km/h
+                  ? ((item as HourlyForecast).wind_kph * 0.621371).toFixed(2)
+                  : ((item as ForecastDay).day.maxwind_kph * 0.621371).toFixed(2)}{" "}
+                mph
               </p>
               <p>
                 Humidity:{" "}
@@ -527,10 +535,10 @@ const Weather: NextPage = () => {
         // Perform two separate fetch calls concurrently for wind speed and wind direction
         const [windSpeedResponse, windDirResponse] = await Promise.all([
           fetch(
-            `/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindS}&calc=${aggregation}&timeframe=24`
+            `/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindS}&calc=${aggregation}&timeframe=168`
           ),
           fetch(
-            `/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindD}&calc=${aggregation}&timeframe=24`
+            `/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindD}&calc=${aggregation}&timeframe=168`
           ),
         ]);
 
@@ -630,147 +638,147 @@ const Weather: NextPage = () => {
           {
             r: bins["<5"],
             theta: directions,
-            name: "< 5 m/s",
+            name: "< 5 mph",
             type: "barpolar",
             marker: { color: "rgb(242,240,247)" },
           },
           {
             r: bins["5-8"],
             theta: directions,
-            name: "5-8 m/s",
+            name: "5-8 mph",
             type: "barpolar",
             marker: { color: "rgb(203,201,226)" },
           },
           {
             r: bins["8-11"],
             theta: directions,
-            name: "8-11 m/s",
+            name: "8-11 mph",
             type: "barpolar",
             marker: { color: "rgb(158,154,200)" },
           },
           {
             r: bins["11-14"],
             theta: directions,
-            name: "11-14 m/s",
+            name: "11-14 mph",
             type: "barpolar",
             marker: { color: "rgb(106,81,163)" },
           },
           {
             r: bins["15-19"],
             theta: directions,
-            name: "15-19 m/s",
+            name: "15-19 mph",
             type: "barpolar",
             marker: { color: "rgb(255,255,190)" },
           },
           {
             r: bins["20-24"],
             theta: directions,
-            name: "20-24 m/s",
+            name: "20-24 mph",
             type: "barpolar",
             marker: { color: "rgb(255,255,210)" },
           },
           {
             r: bins["25-29"],
             theta: directions,
-            name: "25-29 m/s",
+            name: "25-29 mph",
             type: "barpolar",
             marker: { color: "rgb(255,255,230)" },
           },
           {
             r: bins["30-34"],
             theta: directions,
-            name: "30-34 m/s",
+            name: "30-34 mph",
             type: "barpolar",
             marker: { color: "rgb(255,240,255)" },
           },
           {
             r: bins["35-39"],
             theta: directions,
-            name: "35-39 m/s",
+            name: "35-39 mph",
             type: "barpolar",
             marker: { color: "rgb(255,210,255)" },
           },
           {
             r: bins["40-44"],
             theta: directions,
-            name: "40-44 m/s",
+            name: "40-44 mph",
             type: "barpolar",
             marker: { color: "rgb(255,180,255)" },
           },
           {
             r: bins["45-49"],
             theta: directions,
-            name: "45-49 m/s",
+            name: "45-49 mph",
             type: "barpolar",
             marker: { color: "rgb(255,150,255)" },
           },
           {
             r: bins["50-54"],
             theta: directions,
-            name: "50-54 m/s",
+            name: "50-54 mph",
             type: "barpolar",
             marker: { color: "rgb(252,120,255)" },
           },
           {
             r: bins["55-59"],
             theta: directions,
-            name: "55-59 m/s",
+            name: "55-59 mph",
             type: "barpolar",
             marker: { color: "rgb(231,90,255)" },
           },
           {
             r: bins["60-64"],
             theta: directions,
-            name: "60-64 m/s",
+            name: "60-64 mph",
             type: "barpolar",
             marker: { color: "rgb(210,60,255)" },
           },
           {
             r: bins["65-69"],
             theta: directions,
-            name: "65-69 m/s",
+            name: "65-69 mph",
             type: "barpolar",
             marker: { color: "rgb(189,30,255)" },
           },
           {
             r: bins["70-74"],
             theta: directions,
-            name: "70-74 m/s",
+            name: "70-74 mph",
             type: "barpolar",
             marker: { color: "rgb(168,0,250)" },
           },
           {
             r: bins["75-79"],
             theta: directions,
-            name: "75-79 m/s",
+            name: "75-79 mph",
             type: "barpolar",
             marker: { color: "rgb(147,0,225)" },
           },
           {
             r: bins["80-84"],
             theta: directions,
-            name: "80-84 m/s",
+            name: "80-84 mph",
             type: "barpolar",
             marker: { color: "rgb(126,0,200)" },
           },
           {
             r: bins["85-89"],
             theta: directions,
-            name: "85-89 m/s",
+            name: "85-89 mph",
             type: "barpolar",
             marker: { color: "rgb(105,0,175)" },
           },
           {
             r: bins["90-94"],
             theta: directions,
-            name: "90-94 m/s",
+            name: "90-94 mph",
             type: "barpolar",
             marker: { color: "rgb(84,0,150)" },
           },
           {
             r: bins["95-99"],
             theta: directions,
-            name: "95-99 m/s",
+            name: "95-99 mph",
             type: "barpolar",
             marker: { color: "rgb(63,0,125)" },
           },
@@ -788,6 +796,8 @@ const Weather: NextPage = () => {
     title: { text: "Wind Speed Distribution" },
     font: { size: 16 },
     legend: { font: { size: 10 } },
+    paper_bgcolor: "#f1f5f9",
+    plot_bgcolor: "#f1f5f9",
     polar: {
       bgcolor: "#f1f5f9",
       barmode: "overlay",
@@ -801,16 +811,16 @@ const Weather: NextPage = () => {
   //   function celsiusToFahrenheit(celsius: number): number {
   //     return (celsius * 9) / 5 + 32;
   // }
-  function kphToMph(kph: number): number {
-    return kph * 0.621371;
-  }
+  // function kphToMph(kph: number): number {
+  //   return kph * 0.621371;
+  // }
   function convertWindDirection(degree: number): string {
-    const reversedDegree = (degree + 180) % 360;
+
     const directions = [
       "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
       "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
     ];
-    const index = Math.floor((reversedDegree + 11.25) / 22.5) % 16;
+    const index = Math.floor((degree + 11.25) / 22.5) % 16;
     return directions[index];
   }
 
@@ -825,17 +835,18 @@ const Weather: NextPage = () => {
         <meta name="description" content="Tank Dashboard UI" />
       </Head>
 
-      <main className="w-full h-full flex flex-col bg-slate-500 p-2">
-        <div className="flex flex-col gap-2 min-h-screen">
-          <section className="bg-white rounded-lg shadow p-2 text-black flex flex-col items-center">
-            <h2 className="text-center text-lg font-semibold mb-4">Current Readings</h2>
+      <main className="w-full min-h-[calc(100vh-50px)] md:h-[calc(100vh-50px)] flex flex-col md:flex-row overflow-hidden">
+        <div className="flex-grow p-2 grid grid-cols-1 gap-2 overflow-scroll">
+          <section className="bg-slate-100 rounded-lg shadow p-2 text-black flex flex-col items-center">
+            <h2 className="text-center text-xl font-semibold font-mono">Current Readings</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-center">
               <div>
                 {windRoseData.length > 0 ? (
                   <PlotlyComponent
                     data={windRoseData}
                     layout={layout}
-                    useResizeHandler = {true}
+                    config={{ displayModeBar: false, responsive: true }}
+                    useResizeHandler={true}
                     style={{ width: "500px", height: "400px" }}
                   />
                 ) : (
@@ -844,7 +855,7 @@ const Weather: NextPage = () => {
                 <strong className="text-lg">Current:</strong>
                 <div className="flex items-center gap-2">
                   <Image src={"/Weather_Images/9024034_wind_fill_icon.svg"} width={30} height={30} alt="Wind Speed" />
-                  <p>Wind Speed: {windSpeedData ? kphToMph(windSpeedData).toFixed(2) : "Loading..."} mph</p>
+                  <p>Wind Speed: {windSpeedData ? windSpeedData.toFixed(2) : "Loading..."} mph</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Image src={"/Weather_Images/8875188_wind_direction_arrow_icon.svg"} width={30} height={30} alt="Wind Direction" />
@@ -852,31 +863,17 @@ const Weather: NextPage = () => {
                 </div>
               </div>
               {renderGauge(humidity, "Humidity", [0, 100], "#0f0")}
-              {renderGauge(atmosphericPressure, "Pressure", [950, 1050], "#f00")}
-              {renderGauge(atmosphericTemperature, "Temperature", [-10, 50], "#ff6347")}
+              {renderGauge(atmosphericPressure, "Pressure", [20, 35], "#f00")}
+              {renderGauge(atmosphericTemperature, "Temperature", [-50, 150], "#ff6347")}
               {renderGauge(luminescence, "Luminescence", [0, 1000], "#add8e6")}
-              {renderGauge(rainfall, "Rainfall", [0, 100], "#87cefa")}
+              {renderGauge(rainfall, "Rainfall", [0, 50], "#87cefa")}
             </div>
           </section>
 
-          <section className=" bg-slate-100 flex flex-col rounded-lg shadow p-4 text-black">
-            <h2 className="text-center text-xl font-semibold mb-3">Weather Forecast</h2>
-            <div className="mb-4 flex justify-start">
-              <select
-                className=" flex flex-col p-2 border border-gray-300 rounded-md"
-                value={forecastPeriod}
-                onChange={(e) => setForecastPeriod(e.target.value)}
-              >
-                <option value="HOURLY">Hourly Forecast</option>
-                <option value="3DAY">3 Day Forecast</option>
-                <option value="7DAY">7 Day Forecast</option>
-              </select>
-            </div>
-            {forecast ? renderForecast() : <p>Loading forecast...</p>}
-          </section>
 
-          <section className="w-full h-full flex-grow bg-slate-100 rounded-lg shadow p-4 text-black flex flex-col">
-            <h2 className="text-center text-xl font-semibold mb-3">Historical Data</h2>
+
+          <section className="w-full h-full flex-grow bg-slate-100 rounded-lg shadow p-4 text-black flex-col hidden">
+            <h2 className="text-center text-xl font-semibold font-mono">Historical Data</h2>
             <div className="mb-4 flex justify-start">
               <select
                 className="p-2 border border-gray-300 rounded-md"
@@ -892,6 +889,7 @@ const Weather: NextPage = () => {
                 <option value="Rainfall">Rainfall</option>
               </select>
             </div>
+
             <div className="flex-grow">
               {(() => {
                 // Mapping of sensor names to their historical data states
@@ -937,6 +935,7 @@ const Weather: NextPage = () => {
                       xaxis: { title: "Time" }, // Label for x-axis
                       yaxis: { title: selectedSensor }, // Label for y-axis
                     }}
+                    config={{ displayModeBar: false }}
                     useResizeHandler
                     style={{ width: "100%", height: "100%" }}
                   />
@@ -945,8 +944,27 @@ const Weather: NextPage = () => {
             </div>
           </section>
 
+        </div>
+        <div className="w-full md:w-1/6 h-fit flex items-center justify-center">
+          <div className="w-full max-w-md min-h-[calc(100vh-50px)] md:h-[calc(100vh-50px)] bg-slate-100 shadow-lg p-4 md:rounded-none rounded-sm flex-grow flex-col overflow-y-auto">
 
-
+            <h2 className="text-center text-xl font-semibold font-mono">Weather Forecast</h2>
+            <div className="mb-4 flex justify-start">
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
+                    {forecastPeriod}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu onAction={(key) => setForecastPeriod(key as string)}>
+                  <DropdownItem key={"Hourly Forecast"}>Hourly Forecast</DropdownItem>
+                  <DropdownItem key={"3 Day Forecast"}>3 Day Forecast</DropdownItem>
+                  <DropdownItem key={"7 Day Forecast"}>7 Day Forecast</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+            {forecast ? renderForecast() : <p>Loading forecast...</p>}
+          </div>
         </div>
       </main>
     </>

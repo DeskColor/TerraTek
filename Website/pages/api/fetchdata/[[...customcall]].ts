@@ -14,7 +14,7 @@ const db: mysql.Pool = mysql.createPool({
 });
 
 // Conversion functions
-const convertToImperial = (value: number, units: string): number => {
+const convertToImperial = (value: number, units: string): number | null => {
     switch (units) {
         case '°C': return (value * 9/5) + 32; // Celsius to Fahrenheit
         case 'mm': return value * 0.0393701;   // Millimeters to inches
@@ -130,6 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 WHERE r.Sensor_ID = ?
                   AND r.Board_ID = ?
                   AND r.Sensor_Timestamp BETWEEN ? AND ?
+                  AND r.Error_ID = 0
                 GROUP BY Interval_Timestamp
                 ORDER BY Interval_Timestamp DESC;
             `;
@@ -142,6 +143,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 WHERE r.Sensor_ID = ?
                   AND r.Board_ID = ?
                   AND r.Sensor_Timestamp BETWEEN ? AND ?
+                  AND r.Error_ID = 0
                 GROUP BY Interval_Timestamp
                 ORDER BY Interval_Timestamp DESC;
             `;

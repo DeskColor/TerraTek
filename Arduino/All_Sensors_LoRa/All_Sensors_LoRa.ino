@@ -10,6 +10,7 @@
 #include "arduino_secrets.h"
 #include "sensor_ids.h"
 
+
 // LoRaWAN credentials are stored in arduino_secrets.h
 String appEui = SECRET_APP_EUI;
 String appKey = SECRET_APP_KEY;
@@ -47,6 +48,12 @@ const int windSpeedPin = 1;
 const int rainfallPin = 5;
 // const int echo = 3;
 // const int trig = 2;
+
+// SoftwareSerial Serial1(13, 14); // RX, TX (green ,blue)
+unsigned char data[4] = {};
+
+double distance = 0;
+
 double rainfall = 0;
 
 // // Create an instance of the weather meter kit
@@ -150,6 +157,7 @@ bool LoRaWAN_send(char SID, char error, double reading) {
 
 void setup() {
   Serial.begin(115200);
+  Serial1.begin(9600);
   // while (!Serial)
   //   ;
 
@@ -374,9 +382,30 @@ void loop() {
   //   Serial.println(" CM");
   //   error = 0x00;
   // }
+  do {
+    for (int i = 0; i < 4; i++) {
+      data[i] = Serial1.read();
+    }
+  } while (Serial1.read() == 0xff);
 
-  // LoRaWAN_send(DFR_Ultrasonic_Distance, error, distance);
+  Serial1.flush();
+
+  if (data[0] == 0xff) {
+    int sum;
+    sum = (data[0] + data[1] + data[2]) & 0x00FF;
+    if (sum == data[3]) {
+      distance = (data[1] << 8) + data[2];
+      if (distance > 280) {
+        error = 0;
+        distance = distance / 10;
+      } else {
+        error = 1;
+      }
+    } else error = 1;
+  }
+  LoRaWAN_send(DFR_Ultrasonic_Distance_ID, error, distance);
 
   // unsigned long end = millis();
   // LowPower.sleep(60000 - (end - start)); //sleep for 1 minutes regardless of the time taken in the loop
 }
+
