@@ -26,6 +26,8 @@ char error = 0x00;
 double temp = 0;
 double distance = 0;
 
+unsigned char data[4] = {0};
+
 unsigned long start;
 unsigned long last_success;
 
@@ -68,21 +70,21 @@ void setup() {
   wdt_reset();
 
   // Connect to the LoRaWAN network
-  int connected = false;
-  int tries = 0;
-  do {
-    Serial.println("Attempting to connect");
-    connected = modem.joinOTAA(appEui, appKey);
-    wdt_reset();
-    tries++;
-    if(tries >= 15){
-      NVIC_SystemReset();
-    }
-    delay(1000);
-    wdt_reset();
-  } while (!connected);
+  // int connected = false;
+  // int tries = 0;
+  // do {
+  //   Serial.println("Attempting to connect");
+  //   connected = modem.joinOTAA(appEui, appKey);
+  //   wdt_reset();
+  //   tries++;
+  //   if(tries >= 15){
+  //     NVIC_SystemReset();
+  //   }
+  //   delay(1000);
+  //   wdt_reset();
+  // } while (!connected);
 
-  modem.minPollInterval(5);
+  // modem.minPollInterval(5);
   last_success = millis();
 
   wdt_reset();
@@ -107,7 +109,7 @@ void loop() {
   Serial.println(temp);
 
   wdt_reset();
-  LoRaWAN_send(DS18B2_Temperature_Probe_ID, error, temp);
+  // LoRaWAN_send(DS18B2_Temperature_Probe_ID, error, temp);
   wdt_reset();
 
   // --- Depth Sensor ---
@@ -119,7 +121,7 @@ void loop() {
   }
 
   wdt_reset();
-  LoRaWAN_send(DFR_Ultrasonic_Distance_ID, error, distance);
+  // LoRaWAN_send(DFR_Ultrasonic_Distance_ID, error, distance);
   wdt_reset();
 
 
@@ -134,7 +136,7 @@ void loop() {
     NVIC_SystemReset();
   }
 
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < 1; i++) {
     delay(1000);
     wdt_reset();
   }
@@ -198,61 +200,50 @@ bool LoRaWAN_send(char SID, char error, double reading) {
 }
 
 double ultrasonic_read() {
-  unsigned char data[4] = {0};
-  unsigned long start_read = millis();
-  const unsigned long timeout_ms = 1000;
-  wdt_reset();
-
-  while (mySerial.available() < 5) {
-    if (millis() - start_read > timeout_ms) {
-      Serial.println("Ultrasonic read timeout");
+  unsigned long timeout = millis() + 1000; // 1-second timeout
+  while (millis() < timeout) {
+    // Wait for at least 4 bytes
+    if (mySerial.available() >= 4) {
+      unsigned char data[4];
+      for (int i = 0; i < 4; i++) {
+        data[i] = mySerial.read();
+      }
+      // Skip bytes until a non-0xFF byte is found (mimicking old code)
+      while (mySerial.available() && mySerial.read() == 0xFF) {
+        // Re-read 4 bytes if we skip a 0xFF
+        if (mySerial.available() >= 4) {
+          for (int i = 0; i < 4; i++) {
+            data[i] = mySerial.read();
+          }
+        } else {
+          return 0.0; // Not enough data after skipping
+        }
+      }
+      // Clear remaining buffer to avoid stale data
       while (mySerial.available()) {
         mySerial.read();
       }
-      return 0;
-    }
-  }
-  wdt_reset();
-
-  for (int i = 0; i < 4; i++) {
-    data[i] = mySerial.read();
-  }
-
-  if (mySerial.read() == 0xff) {
-    Serial.println("Ultrasonic read error: unexpected 0xff");
-    while (mySerial.available()) {
-      mySerial.read();
-    }
-    return 0;
-  }
-  wdt_reset();
-
-  if (data[0] == 0xff) {
-    int sum = (data[0] + data[1] + data[2]) & 0x00FF;
-    if (sum == data[3]) {
-      float recived_distance = (data[1] << 8) + data[2];
-      if (recived_distance > 280) {
-        Serial.print("recived_distance=");
-        Serial.print(recived_distance / 10);
-        Serial.println("cm");
-        while (mySerial.available()) {
-          mySerial.read();
+      // Process frame if it starts with 0xFF
+      if (data[0] == 0xFF) {
+        int sum = (data[0] + data[1] + data[2]) & 0x00FF;
+        if (sum == data[3]) {
+          float distance = (data[1] << 8) + data[2];
+          distance /= 10.0; // Convert to cm
+          // Use old code's threshold (28 cm)
+          if (distance > 28.0) {
+            Serial.print("Distance: ");
+            Serial.print(distance);
+            Serial.println(" cm");
+            return (double)distance;
+          } else {
+            Serial.println("Below the lower limit");
+          }
+        } else {
+          Serial.println("Checksum error");
         }
-        return (double)(recived_distance / 10);
-      } else {
-        Serial.println("Below the lower limit");
       }
-    } else {
-      Serial.println("ERROR: checksum mismatch");
     }
-  } else {
-    Serial.println("ERROR: invalid header");
   }
-  
-  wdt_reset();
-  // Clear buffer on error
-  while (mySerial.available()) {
-    mySerial.read();
-  }
-  return 0;
+  Serial.println("No valid data received");
+  return 0.0; // Return 0 on failure
 }
