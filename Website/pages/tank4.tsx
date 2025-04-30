@@ -30,7 +30,7 @@ type DateRange = {
     end: new Date(), // Current date
   });
 
-  const board_freshwater1 = "0xa8610a3436268316";
+  const board_id = "0xa8610a343235910e";
   const sensor_Temp = "1";
   const sensor_WaterLevel = "10";
   const sensor_pH = "11";
@@ -53,10 +53,10 @@ const [tdcData, setTdcData] = useState<number | null>(null);
   useEffect(() => {
     const fetchHistoricalTankData= async () => {
       const [reading2, reading3, reading4, reading5] = await Promise.all([
-        fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`), // HistoricWater Level
-        fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_Temp}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic Temp
-        fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_pH}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic pH
-        fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_TDC}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic TDC
+        fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`), // HistoricWater Level
+        fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_Temp}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic Temp
+        fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_pH}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic pH
+        fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_TDC}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic TDC
     ]);
 
     // Parse the JSON from each response
@@ -76,10 +76,10 @@ fetchHistoricalTankData();
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1`), // Water Level
-      fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_Temp}&calc=${aggregation}&timeframe=1`),  // Water Temp
-      fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_pH}&calc=${aggregation}&timeframe=1`), // pH
-      fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_TDC}&calc=${aggregation}&timeframe=1`),  // TDC
+      fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1`), // Water Level
+      fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_Temp}&calc=${aggregation}&timeframe=1`),  // Water Temp
+      fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_pH}&calc=${aggregation}&timeframe=1`), // pH
+      fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_TDC}&calc=${aggregation}&timeframe=1`),  // TDC
     ])
       .then((responses) => Promise.all(responses.map((r) => r.json())))
       .then(([data2, data3, data4, data5]) => {
@@ -338,7 +338,7 @@ fetchHistoricalTankData();
             {/* Current Section */}
             <div className="bg-slate-100 shadow-sm rounded-md p-2">
               <h2 className="text-center text-lg sm:text-xl font-semibold font-mono">
-                Current Freshwater Tank 1
+                Current Grey Water Tank
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {/* Water Level */}

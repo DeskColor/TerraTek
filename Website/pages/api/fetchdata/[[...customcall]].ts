@@ -16,7 +16,7 @@ const db: mysql.Pool = mysql.createPool({
 // Conversion functions
 const convertToImperial = (value: number, units: string): number | null => {
     switch (units) {
-        case '°C': return (value * 9/5) + 32; // Celsius to Fahrenheit
+        case '°C': return (value * 9 / 5) + 32; // Celsius to Fahrenheit
         case 'mm': return value * 0.0393701;   // Millimeters to inches
         case 'kPa': return value * 0.2953;     // Kilopascals to inHg
         case 'kph': return value * 0.621371;    // Kilometers per hour to Miles per hour
@@ -111,13 +111,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const unitsQuery = `
             SELECT Units FROM Sensors WHERE Sensor_ID = ?;
         `;
-        
+
         const [unitsResult] = await db.execute<mysql.RowDataPacket[]>(unitsQuery, [sensorId]);
         if (unitsResult.length === 0) {
             return res.status(404).json({ error: 'Sensor units not found.' });
         }
         const units = unitsResult[0]?.Units || '';
-        
+
 
         // Main query to get readings
         let sqlQuery: string;
@@ -152,8 +152,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Execute the query
         const [results] = await db.execute<mysql.RowDataPacket[]>(sqlQuery, [sensorId, boardId, startTimeFormatted, endTimeFormatted]);
 
-        // Apply unit conversion if needed
-
 
         // const convertedResults = results.map((row) => convertToImperial(parseFloat((row as { Calculated_Reading: string }).Calculated_Reading), units));
 
@@ -170,12 +168,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 convertedValue = convertDefault(calculatedReading, unit);
             }
 
+            if (sensorId == 10) {
+                if (boardId == "0xa8610a3436268316") {
+                    convertedValue = 100 - ((calculatedReading - 40) / 188 * 100)
+                }
+                else {
+                    convertedValue = 100 - ((calculatedReading - 74) / 224 * 100)
+                }
+            }
+
             return {
                 ...row,
-                Test: "hello",
                 Calculated_Reading: convertedValue,
                 Units: useImperial !== '0' ? getImperialUnit(unit) : unit
             };
+
         });
 
         // Return the results

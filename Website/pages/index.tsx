@@ -128,7 +128,7 @@ const Dashboard = () => {
     const board_freshwater1 = "0xa8610a3436268316";
     const board_freshwater2 = "0xa8610a33382d9411";
     const board_freshwater3 = "0xa8610a3339188011";
-    const board_greywater = "0xa8610a3436268316";
+    const board_greywater = "0xa8610a343235910e";
 
     const sensor_WaterLevel = "10"; // Replace with actual sensor ID
     const sensor_Temp = "1"
@@ -237,10 +237,10 @@ const Dashboard = () => {
                 fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Humidity}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`),  // Humidity
                 fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Pressure}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`), // Pressure
 
-                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`), // Water Level1
-                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`), // Water Level 2
-                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`), // Water Level 3
-                fetch(`/api/fetchdata/sensor-data?board=${board_greywater}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`), // Water Level 3
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&timeframe=1`), // Water Level1
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=${sensor_WaterLevel}&timeframe=1`), // Water Level 2
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=${sensor_WaterLevel}&timeframe=1`), // Water Level 3
+                fetch(`/api/fetchdata/sensor-data?board=${board_greywater}&sensor=${sensor_WaterLevel}&timeframe=1`), // Water Level 3
             ]);
 
             // Parse the JSON from each response

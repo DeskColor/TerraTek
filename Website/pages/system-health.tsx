@@ -81,7 +81,7 @@ const HealthPage = () => {
     const fresh1ID = "0xa8610a3436268316";
     const fresh2ID = "0xa8610a33382d9411";
     const fresh3ID = "0xa8610a3339188011";
-    const greyID = "0xa8610a33383b9411";
+    const greyID = "0xa8610a343235910e";
 
 
     function processData(rate: Array<{ Hourly_Timestamp: string; Number_Reading: number }>) {
@@ -367,9 +367,9 @@ const HealthPage = () => {
                                         bar: { color: "darkGreen" },
                                         axis: { range: [570, 670] },
                                         steps: [
-                                            { range: [570, 600], color: "lightgray" },
-                                            { range: [600, 640], color: "lightGreen" },
-                                            { range: [640, 670], color: "lightgray" }
+                                            { range: [490, 520], color: "lightgray" },
+                                            { range: [520, 560], color: "lightGreen" },
+                                            { range: [560, 590], color: "lightgray" }
                                         ],
 
                                     },
@@ -430,9 +430,9 @@ const HealthPage = () => {
                                         bar: { color: "darkGreen" },
                                         axis: { range: [130, 230] },
                                         steps: [
-                                            { range: [130, 160], color: "lightgray" },
-                                            { range: [160, 200], color: "lightGreen" },
-                                            { range: [200, 230], color: "lightgray" }
+                                            { range: [180, 210], color: "lightgray" },
+                                            { range: [210, 250], color: "lightGreen" },
+                                            { range: [250, 280], color: "lightgray" }
                                         ],
 
                                     },
@@ -493,9 +493,9 @@ const HealthPage = () => {
                                         bar: { color: "darkGreen" },
                                         axis: { range: [130, 230] },
                                         steps: [
-                                            { range: [130, 160], color: "lightgray" },
-                                            { range: [160, 200], color: "lightGreen" },
-                                            { range: [200, 230], color: "lightgray" }
+                                            { range: [180, 210], color: "lightgray" },
+                                            { range: [210, 250], color: "lightGreen" },
+                                            { range: [250, 280], color: "lightgray" }
                                         ],
 
                                     },
@@ -556,9 +556,9 @@ const HealthPage = () => {
                                         bar: { color: "darkGreen" },
                                         axis: { range: [570, 670] },
                                         steps: [
-                                            { range: [570, 600], color: "lightgray" },
-                                            { range: [600, 640], color: "lightGreen" },
-                                            { range: [640, 670], color: "lightgray" }
+                                            { range: [530, 560], color: "lightgray" },
+                                            { range: [560, 600], color: "lightGreen" },
+                                            { range: [600, 630], color: "lightgray" }
                                         ],
 
                                     },
@@ -580,8 +580,7 @@ const HealthPage = () => {
                                 Grey Water Tank: {onlineGrey === null ? "LOADING..." : onlineGrey.online ? "ONLINE ✅" : "OFFLINE ❌"}
                             </p>
                             <p className={`${onlineGrey === null ? "text-gray-500" : onlineGrey.online ? "text-green-900" : "text-red-900"}`}>
-                                {/* Last Reading: {onlineGrey === null ? "LOADING..." : onlineGrey.last_reading} */}
-                                Last Reading: NEVER
+                                Last Reading: {onlineGrey === null ? "LOADING..." : onlineGrey.last_reading}
                             </p>
                         </div>
                         <PlotlyComponent
