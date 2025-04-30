@@ -14,6 +14,14 @@
 String appEui = SECRET_APP_EUI;
 String appKey = SECRET_APP_KEY;
 
+#define EC_SENSOR_PIN A4     // Analog pin for the EC sensor
+// #define PH_SENSOR_PIN A3
+
+// Variables for EC and pH calibration
+const double V_REF = 3.3;              // Reference voltage for MKR WAN 1310
+const int ADC_RES_BITS = 4095;         // 12-bit ADC resolution (renamed to avoid conflict)
+
+
 LoRaModem modem;
 
 #define ONE_WIRE_BUS 0
@@ -70,21 +78,22 @@ void setup() {
   wdt_reset();
 
   // Connect to the LoRaWAN network
-  // int connected = false;
-  // int tries = 0;
-  // do {
-  //   Serial.println("Attempting to connect");
-  //   connected = modem.joinOTAA(appEui, appKey);
-  //   wdt_reset();
-  //   tries++;
-  //   if(tries >= 15){
-  //     NVIC_SystemReset();
-  //   }
-  //   delay(1000);
-  //   wdt_reset();
-  // } while (!connected);
+  int connected = false;
+  int tries = 0;
+  do {
+    Serial.println("Attempting to connect");
+    wdt_disable ( );
+    connected = modem.joinOTAA(appEui, appKey);
+    wdt_reEnable ( );
+    tries++;
+    if(tries >= 15){
+      NVIC_SystemReset();
+    }
+    delay(1000);
+    wdt_reset();
+  } while (!connected);
 
-  // modem.minPollInterval(5);
+  modem.minPollInterval(5);
   last_success = millis();
 
   wdt_reset();
@@ -109,7 +118,7 @@ void loop() {
   Serial.println(temp);
 
   wdt_reset();
-  // LoRaWAN_send(DS18B2_Temperature_Probe_ID, error, temp);
+  LoRaWAN_send(DS18B2_Temperature_Probe_ID, error, temp);
   wdt_reset();
 
   // --- Depth Sensor ---
@@ -121,9 +130,22 @@ void loop() {
   }
 
   wdt_reset();
-  // LoRaWAN_send(DFR_Ultrasonic_Distance_ID, error, distance);
+  LoRaWAN_send(DFR_Ultrasonic_Distance_ID, error, distance);
   wdt_reset();
 
+  Serial.print("EC = ");
+  Serial.println(readECSensor());
+
+  wdt_reset();
+  LoRaWAN_send(EC_ID, 0x00, readECSensor());
+  wdt_reset();
+
+  // Serial.print("PH = ");
+  // Serial.println(readPHSensor());
+
+  // wdt_reset();
+  // LoRaWAN_send(PH_ID, 0x00, readPHSensor());
+  // wdt_reset();
 
 
   // Reboot every 3 days
@@ -247,3 +269,24 @@ double ultrasonic_read() {
   Serial.println("No valid data received");
   return 0.0; // Return 0 on failure
 }
+
+// Function to read data from the pH sensor
+// float readPHSensor() {
+//    int sensorValue = analogRead(PH_SENSOR_PIN);           // Read the analog value
+//    float voltage = sensorValue * (V_REF / ADC_RES_BITS);  // Convert ADC value to voltage
+//    float current = voltage / 100.0 * 1000;                // Calculate current in mA (Ohm's Law)
+//    float pH = (current - 4.0) * (14.0 / 16.0);            // Convert current to pH value
+//    return pH;
+//  }
+
+ // Function to read data from the EC sensor
+ float readECSensor() {
+    float EC;
+    int sensorValue = analogRead(EC_SENSOR_PIN);           // Read the analog value
+    Serial.print("EC analog:");
+    Serial.println(sensorValue);
+    
+    EC = sensorValue * .22541;
+
+   return EC;
+ }

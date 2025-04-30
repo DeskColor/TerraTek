@@ -70,21 +70,22 @@ void setup() {
   wdt_reset();
 
   // Connect to the LoRaWAN network
-  // int connected = false;
-  // int tries = 0;
-  // do {
-  //   Serial.println("Attempting to connect");
-  //   connected = modem.joinOTAA(appEui, appKey);
-  //   wdt_reset();
-  //   tries++;
-  //   if(tries >= 15){
-  //     NVIC_SystemReset();
-  //   }
-  //   delay(1000);
-  //   wdt_reset();
-  // } while (!connected);
+  int connected = false;
+  int tries = 0;
+  do {
+    Serial.println("Attempting to connect");
+    wdt_disable ( );
+    connected = modem.joinOTAA(appEui, appKey);
+    wdt_reEnable ( );
+    tries++;
+    if(tries >= 15){
+      NVIC_SystemReset();
+    }
+    delay(1000);
+    wdt_reset();
+  } while (!connected);
 
-  // modem.minPollInterval(5);
+  modem.minPollInterval(5);
   last_success = millis();
 
   wdt_reset();
@@ -109,7 +110,7 @@ void loop() {
   Serial.println(temp);
 
   wdt_reset();
-  // LoRaWAN_send(DS18B2_Temperature_Probe_ID, error, temp);
+  LoRaWAN_send(DS18B2_Temperature_Probe_ID, error, temp);
   wdt_reset();
 
   // --- Depth Sensor ---
@@ -121,7 +122,7 @@ void loop() {
   }
 
   wdt_reset();
-  // LoRaWAN_send(DFR_Ultrasonic_Distance_ID, error, distance);
+  LoRaWAN_send(DFR_Ultrasonic_Distance_ID, error, distance);
   wdt_reset();
 
 
@@ -136,7 +137,7 @@ void loop() {
     NVIC_SystemReset();
   }
 
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 20; i++) {
     delay(1000);
     wdt_reset();
   }
