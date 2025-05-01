@@ -179,7 +179,7 @@ fetchHistoricalTankData();
 
   function renderwaterLevelScatterPlot(data: SensorReading[] | null) {
     if (!data) return <div>Loading sensor data...</div>;
-    if (data.length === 0) return <div>No Fresh Water data available.</div>;
+    if (data.length === 0) return <div>No Fresh Water 2 data available.</div>;
   
     const xValues = data.map((reading) => reading.Interval_Timestamp);
     const yValues = data.map((reading) => reading.Calculated_Reading);
@@ -189,6 +189,7 @@ fetchHistoricalTankData();
         data={[
           {
             type: "scatter",
+            fill: 'tozeroy',
             mode: "lines+markers",
             x: xValues,
             y: yValues,
@@ -200,7 +201,7 @@ fetchHistoricalTankData();
           autosize: true,
           margin: { t: 20, r: 20, l: 40, b: 40 },
           xaxis: { title: "Timestamp", type: "date" },
-          yaxis: { title: "Fresh Water Level (AVG)" },
+          yaxis: { title: "Fresh Water 2 Level (AVG)" },
           paper_bgcolor: "#f1f5f9",
           plot_bgcolor: "#f1f5f9",
         }}
@@ -213,7 +214,7 @@ fetchHistoricalTankData();
 
   function renderTempScatterPlot() {
           if (!waterTempHData) return <div>Loading sensor data...</div>;
-          if (waterTempHData.length === 0) return <div>No Fresh Water data available.</div>;
+          if (waterTempHData.length === 0) return <div>No Fresh Water 2 data available.</div>;
   
           const xValues = waterTempHData.map((reading) => reading.Interval_Timestamp); // Updated field
           const yValues = waterTempHData.map((reading) => reading.Calculated_Reading); // Updated field
@@ -223,6 +224,7 @@ fetchHistoricalTankData();
                   data={[
                       {
                           type: "scatter",
+                          fill: 'tozeroy',
                           mode: "lines+markers", // Use lines for better trend visualization
                           x: xValues,
                           y: yValues,
@@ -234,7 +236,7 @@ fetchHistoricalTankData();
                       autosize: true,
                       margin: { t: 20, r: 20, l: 40, b: 40 },
                       xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
-                      yaxis: { title: "Fresh Water Level (AVG)" },
+                      yaxis: { title: "Fresh Water 2 Level (AVG)" },
                       paper_bgcolor: '#f1f5f9',
                       plot_bgcolor: '#f1f5f9',
                   }}
@@ -250,7 +252,7 @@ fetchHistoricalTankData();
             {/* Current Section */}
             <div className="bg-slate-100 shadow-sm rounded-md p-2">
               <h2 className="text-center text-lg sm:text-xl font-semibold font-mono">
-                Current Freshwater Tank 1
+                Current Fresh Water 2 Tank 2
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {/* Water Level */}
@@ -274,7 +276,7 @@ fetchHistoricalTankData();
             {/* Historical Section */}
             <div className="bg-slate-100 shadow-sm rounded-md p-2">
               <h2 className="text-center text-lg sm:text-xl font-semibold font-mono">
-                Historical Freshwater Tank 1
+                Historical Fresh Water 2 Tank 2
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {/* Historical Water Level */}

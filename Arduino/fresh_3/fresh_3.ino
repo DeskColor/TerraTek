@@ -201,36 +201,29 @@ bool LoRaWAN_send(char SID, char error, double reading) {
 }
 
 double ultrasonic_read() {
-  unsigned long timeout = millis() + 1000; // 1-second timeout
+  unsigned long timeout = millis() + 1000;
   while (millis() < timeout) {
-    // Wait for at least 4 bytes
     if (mySerial.available() >= 4) {
       unsigned char data[4];
       for (int i = 0; i < 4; i++) {
         data[i] = mySerial.read();
       }
-      // Skip bytes until a non-0xFF byte is found (mimicking old code)
       while (mySerial.available() && mySerial.read() == 0xFF) {
-        // Re-read 4 bytes if we skip a 0xFF
         if (mySerial.available() >= 4) {
           for (int i = 0; i < 4; i++) {
             data[i] = mySerial.read();
           }
         } else {
-          return 0.0; // Not enough data after skipping
+          return 0;
         }
       }
-      // Clear remaining buffer to avoid stale data
       while (mySerial.available()) {
         mySerial.read();
-      }
-      // Process frame if it starts with 0xFF
       if (data[0] == 0xFF) {
         int sum = (data[0] + data[1] + data[2]) & 0x00FF;
         if (sum == data[3]) {
           float distance = (data[1] << 8) + data[2];
-          distance /= 10.0; // Convert to cm
-          // Use old code's threshold (28 cm)
+          distance /= 10.0;
           if (distance > 28.0) {
             Serial.print("Distance: ");
             Serial.print(distance);
@@ -246,5 +239,5 @@ double ultrasonic_read() {
     }
   }
   Serial.println("No valid data received");
-  return 0.0; // Return 0 on failure
+  return 0;
 }

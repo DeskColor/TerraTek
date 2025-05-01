@@ -34,7 +34,7 @@ type DateRange = {
   const sensor_Temp = "1";
   const sensor_WaterLevel = "10";
   const sensor_pH = "11";
-  const sensor_TDC = "9";
+  const sensor_EC = "9";
   const aggregation = "AVG"; // AVG, MIN, MAX, MEDIAN, SUM
   const interval = "Hourly"; // Options: "All", "Hourly", "Daily"
 
@@ -42,13 +42,13 @@ type DateRange = {
 const [waterLevelData, setWaterLevelData] = useState<number | null>(null);
 const [waterTempData, setWaterTempData] = useState<number | null>(null);
 const [pHData, setPHData] = useState<number | null>(null);
-const [tdcData, setTdcData] = useState<number | null>(null);
+const [ECData, setECData] = useState<number | null>(null);
 
 
   const [waterLevelHData, setWaterLevelHData] = useState<SensorReading[] | null>(null);
   const [waterTempHData, setWaterTempHData] = useState<SensorReading[] | null>(null);
   const [pHHData, setPHHData] = useState<SensorReading[] | null>(null);
-  const [tdcHData, setTdcHData] = useState<SensorReading[] | null>(null);
+  const [ECHData, setECHData] = useState<SensorReading[] | null>(null);
 
   useEffect(() => {
     const fetchHistoricalTankData= async () => {
@@ -56,7 +56,7 @@ const [tdcData, setTdcData] = useState<number | null>(null);
         fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`), // HistoricWater Level
         fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_Temp}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic Temp
         fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_pH}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic pH
-        fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_TDC}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic TDC
+        fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_EC}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`),  // Historic EC
     ]);
 
     // Parse the JSON from each response
@@ -68,7 +68,7 @@ const [tdcData, setTdcData] = useState<number | null>(null);
     setWaterLevelHData(data2?.length > 0 ? data2 : null);
     setWaterTempHData(data3?.length > 0 ? data3 : null);
     setPHHData(data4?.length > 0 ? data4 : null);
-    setTdcHData(data5?.length > 0 ? data5 : null);
+    setECHData(data5?.length > 0 ? data5 : null);
 };
 
 fetchHistoricalTankData();
@@ -79,7 +79,7 @@ fetchHistoricalTankData();
       fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1`), // Water Level
       fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_Temp}&calc=${aggregation}&timeframe=1`),  // Water Temp
       fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_pH}&calc=${aggregation}&timeframe=1`), // pH
-      fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_TDC}&calc=${aggregation}&timeframe=1`),  // TDC
+      fetch(`/api/fetchdata/sensor-data?board=${board_id}&sensor=${sensor_EC}&calc=${aggregation}&timeframe=1`),  // EC
     ])
       .then((responses) => Promise.all(responses.map((r) => r.json())))
       .then(([data2, data3, data4, data5]) => {
@@ -92,14 +92,14 @@ fetchHistoricalTankData();
         setWaterLevelData(data2?.length > 0 ? parseFloat(data2[0].Calculated_Reading) : null);
         setWaterTempData(data3?.length > 0 ? parseFloat(data3[0].Calculated_Reading) : null);
         setPHData(data4?.length > 0 ? parseFloat(data4[0].Calculated_Reading) : null);
-        setTdcData(data5?.length > 0 ? parseFloat(data5[0].Calculated_Reading) : null);
+        setECData(data5?.length > 0 ? parseFloat(data5[0].Calculated_Reading) : null);
       })
       .catch((err) => console.error("Error fetching data:", err));
   }, []);
 
   const waterLevel = Math.round(waterLevelData ?? 0);
   const pH = Math.round(pHData ?? 2);
-  const TDC = Math.round(tdcData ?? 2);
+  const EC = Math.round(ECData ?? 2);
   const waterTemp = Math.round(waterTempData ?? 2);
 
 
@@ -197,7 +197,7 @@ fetchHistoricalTankData();
 
   function renderwaterLevelScatterPlot(data: SensorReading[] | null) {
     if (!data) return <div>Loading sensor data...</div>;
-    if (data.length === 0) return <div>No Fresh Water data available.</div>;
+    if (data.length === 0) return <div>No Grey Water data available.</div>;
   
     const xValues = data.map((reading) => reading.Interval_Timestamp);
     const yValues = data.map((reading) => reading.Calculated_Reading);
@@ -207,6 +207,7 @@ fetchHistoricalTankData();
         data={[
           {
             type: "scatter",
+            fill: 'tozeroy',
             mode: "lines+markers",
             x: xValues,
             y: yValues,
@@ -218,7 +219,7 @@ fetchHistoricalTankData();
           autosize: true,
           margin: { t: 20, r: 20, l: 40, b: 40 },
           xaxis: { title: "Timestamp", type: "date" },
-          yaxis: { title: "Fresh Water Level (AVG)" },
+          yaxis: { title: "Grey Water Level (AVG)" },
           paper_bgcolor: "#f1f5f9",
           plot_bgcolor: "#f1f5f9",
         }}
@@ -231,7 +232,7 @@ fetchHistoricalTankData();
 
   function renderTempScatterPlot() {
           if (!waterTempHData) return <div>Loading sensor data...</div>;
-          if (waterTempHData.length === 0) return <div>No Fresh Water data available.</div>;
+          if (waterTempHData.length === 0) return <div>No Grey Water data available.</div>;
   
           const xValues = waterTempHData.map((reading) => reading.Interval_Timestamp); // Updated field
           const yValues = waterTempHData.map((reading) => reading.Calculated_Reading); // Updated field
@@ -241,6 +242,7 @@ fetchHistoricalTankData();
                   data={[
                       {
                           type: "scatter",
+                          fill: 'tozeroy',
                           mode: "lines+markers", // Use lines for better trend visualization
                           x: xValues,
                           y: yValues,
@@ -252,7 +254,7 @@ fetchHistoricalTankData();
                       autosize: true,
                       margin: { t: 20, r: 20, l: 40, b: 40 },
                       xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
-                      yaxis: { title: "Fresh Water Level (AVG)" },
+                      yaxis: { title: "Grey Water Level (AVG)" },
                       paper_bgcolor: '#f1f5f9',
                       plot_bgcolor: '#f1f5f9',
                   }}
@@ -265,7 +267,7 @@ fetchHistoricalTankData();
 
       function renderphScatterPlot() {
     if (!pHHData) return <div>Loading sensor data...</div>;
-          if (pHHData.length === 0) return <div>No Fresh Water data available.</div>;
+          if (pHHData.length === 0) return <div>No Grey Water data available.</div>;
   
           const xValues = pHHData.map((reading) => reading.Interval_Timestamp); // Updated field
           const yValues = pHHData.map((reading) => reading.Calculated_Reading); // Updated field
@@ -275,6 +277,7 @@ fetchHistoricalTankData();
                   data={[
                       {
                           type: "scatter",
+                          fill: 'tozeroy',
                           mode: "lines+markers", // Use lines for better trend visualization
                           x: xValues,
                           y: yValues,
@@ -286,7 +289,7 @@ fetchHistoricalTankData();
                       autosize: true,
                       margin: { t: 20, r: 20, l: 40, b: 40 },
                       xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
-                      yaxis: { title: "Fresh Water Level (AVG)" },
+                      yaxis: { title: "Grey Water Level (AVG)" },
                       paper_bgcolor: '#f1f5f9',
                       plot_bgcolor: '#f1f5f9',
                   }}
@@ -297,18 +300,19 @@ fetchHistoricalTankData();
           );
       }
 
-      function renderTDCScatterPlot() {
-    if (!tdcHData) return <div>Loading sensor data...</div>;
-          if (tdcHData.length === 0) return <div>No Fresh Water data available.</div>;
+      function renderECScatterPlot() {
+    if (!ECHData) return <div>Loading sensor data...</div>;
+          if (ECHData.length === 0) return <div>No Grey Water data available.</div>;
   
-          const xValues = tdcHData.map((reading) => reading.Interval_Timestamp); // Updated field
-          const yValues = tdcHData.map((reading) => reading.Calculated_Reading); // Updated field
+          const xValues = ECHData.map((reading) => reading.Interval_Timestamp); // Updated field
+          const yValues = ECHData.map((reading) => reading.Calculated_Reading); // Updated field
   
           return (
               <PlotlyComponent
                   data={[
                       {
                           type: "scatter",
+                          fill: 'tozeroy',
                           mode: "lines+markers", // Use lines for better trend visualization
                           x: xValues,
                           y: yValues,
@@ -320,7 +324,7 @@ fetchHistoricalTankData();
                       autosize: true,
                       margin: { t: 20, r: 20, l: 40, b: 40 },
                       xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
-                      yaxis: { title: "Fresh Water Level (AVG)" },
+                      yaxis: { title: "Grey Water Level (AVG)" },
                       paper_bgcolor: '#f1f5f9',
                       plot_bgcolor: '#f1f5f9',
                   }}
@@ -357,11 +361,11 @@ fetchHistoricalTankData();
                   </span>
                 </div>
         
-                {/* TDC */}
+                {/* EC */}
                 <div className="flex flex-grow flex-col items-center bg-slate-100 p-2 rounded">
-                  {tdcData ? renderGauge(TDC, "", [0, 500], "green") : <p>Loading TDC...</p>}
+                  {ECData ? renderGauge(EC, "", [0, 500], "green") : <p>Loading EC...</p>}
                   <span className="text-center text-sm sm:text-md font-semibold font-mono">
-                    <strong>TDC</strong>
+                    <strong>EC</strong>
                   </span>
                 </div>
         
@@ -378,7 +382,7 @@ fetchHistoricalTankData();
             {/* Historical Section */}
             <div className="bg-slate-100 shadow-sm rounded-md p-2">
               <h2 className="text-center text-lg sm:text-xl font-semibold font-mono">
-                Historical Freshwater Tank 1
+                Historical Grey Tank
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {/* Historical Water Level */}
@@ -397,11 +401,11 @@ fetchHistoricalTankData();
                   </span>
                 </div>
         
-                {/* Historical TDC */}
+                {/* Historical EC */}
                 <div className="flex flex-grow flex-col items-center bg-slate-100 p-2 rounded">
-                  {renderTDCScatterPlot()}
+                  {renderECScatterPlot()}
                   <span className="text-center text-sm sm:text-md font-semibold font-mono">
-                    <strong>TDC Historical Data</strong>
+                    <strong>EC Historical Data</strong>
                   </span>
                 </div>
         

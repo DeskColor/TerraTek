@@ -25,13 +25,26 @@ const convertToImperial = (value: number, units: string): number | null => {
     }
 };
 
-
 const convertDefault = (value: number, units: string): number => {
     switch (units) {
         case '°': return (value + 180) % 360;    // invert direction
         default: return value;                   // No conversion needed
     }
 };
+
+// Cache for sensor units
+const unitCache: { [key: number]: string } = {};
+
+async function getSensorUnits(sensorId: number): Promise<string> {
+    if (unitCache[sensorId]) return unitCache[sensorId];
+    const [unitsResult] = await db.execute<mysql.RowDataPacket[]>(
+        'SELECT Units FROM Sensors WHERE Sensor_ID = ?;',
+        [sensorId]
+    );
+    const units = unitsResult[0]?.Units || '';
+    unitCache[sensorId] = units;
+    return units;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
     try {
@@ -59,7 +72,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Validate unit conversion (default: 0/imperial)
         const useImperial = unit_conversion;
-        console.log(useImperial);
 
         // Validate and parse timeframe (default: last 24 hours)
         const range = parseInt(timeframe as string) || 24;
@@ -67,7 +79,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Validate and parse start and end timestamps
         let startTime, endTime;
         if (start && end) {
-            // Append time to start and end dates if only the date portion is provided
             const startDateStr = start as string;
             const endDateStr = end as string;
 
@@ -81,7 +92,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(400).json({ error: 'Invalid end time format.' });
             }
         } else {
-            // Use default timeframe if no start/end is provided
             endTime = new Date();
             startTime = new Date();
             startTime.setHours(endTime.getHours() - range);
@@ -91,98 +101,105 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const startTimeFormatted = startTime.toISOString().slice(0, 19).replace('T', ' ');
         const endTimeFormatted = endTime.toISOString().slice(0, 19).replace('T', ' ');
 
-        // Determine the DATE_FORMAT based on the selected interval
-        let dateFormat: string;
-        switch (interval) {
-            case 'All':
-                dateFormat = '%Y-%m-%d %H:%i:%s'; // All data 
-                break;
-            case 'Hourly':
-                dateFormat = '%Y-%m-%d %H:00:00'; // Group by hour
-                break;
-            case 'Daily':
-                dateFormat = '%Y-%m-%d 00:00:00'; // Group by day
-                break;
-            default:
-                dateFormat = '%Y-%m-%d %H:00:00'; // Default to hourly
-        }
-
         // First query to get sensor units
-        const unitsQuery = `
-            SELECT Units FROM Sensors WHERE Sensor_ID = ?;
-        `;
-
-        const [unitsResult] = await db.execute<mysql.RowDataPacket[]>(unitsQuery, [sensorId]);
-        if (unitsResult.length === 0) {
+        const units = await getSensorUnits(sensorId);
+        if (!units) {
             return res.status(404).json({ error: 'Sensor units not found.' });
         }
-        const units = unitsResult[0]?.Units || '';
-
 
         // Main query to get readings
         let sqlQuery: string;
-        if (calculationMethod === 'MEDIAN') {
+        if (interval === 'All') {
             sqlQuery = `
                 SELECT 
-                    DATE_FORMAT(r.Sensor_Timestamp, '${dateFormat}') AS Interval_Timestamp,
-                    SUBSTRING_INDEX(SUBSTRING_INDEX(GROUP_CONCAT(r.Sensor_Value ORDER BY r.Sensor_Value), ',', CEIL(COUNT(*) / 2)), ',', -1) AS Calculated_Reading
+                    r.Sensor_Timestamp AS Interval_Timestamp,
+                    r.Sensor_Value AS Calculated_Reading
                 FROM Readings r
                 WHERE r.Sensor_ID = ?
                   AND r.Board_ID = ?
                   AND r.Sensor_Timestamp BETWEEN ? AND ?
-                  AND r.Error_ID = 0
-                GROUP BY Interval_Timestamp
-                ORDER BY Interval_Timestamp DESC;
+                  AND r.Error_ID = 0;
             `;
+        } else if (calculationMethod === 'MEDIAN') {
+            if (interval === 'Hourly') {
+                sqlQuery = `
+                    SELECT 
+                        r.Hourly_Timestamp AS Interval_Timestamp,
+                        SUBSTRING_INDEX(SUBSTRING_INDEX(GROUP_CONCAT(r.Sensor_Value ORDER BY r.Sensor_Value), ',', CEIL(COUNT(*) / 2)), ',', -1) AS Calculated_Reading
+                    FROM Readings r
+                    WHERE r.Sensor_ID = ?
+                      AND r.Board_ID = ?
+                      AND r.Sensor_Timestamp BETWEEN ? AND ?
+                      AND r.Error_ID = 0
+                    GROUP BY r.Hourly_Timestamp;
+                `;
+            } else { // Daily
+                sqlQuery = `
+                    SELECT 
+                        r.Daily_Timestamp AS Interval_Timestamp,
+                        SUBSTRING_INDEX(SUBSTRING_INDEX(GROUP_CONCAT(r.Sensor_Value ORDER BY r.Sensor_Value), ',', CEIL(COUNT(*) / 2)), ',', -1) AS Calculated_Reading
+                    FROM Readings r
+                    WHERE r.Sensor_ID = ?
+                      AND r.Board_ID = ?
+                      AND r.Sensor_Timestamp BETWEEN ? AND ?
+                      AND r.Error_ID = 0
+                    GROUP BY r.Daily_Timestamp;
+                `;
+            }
         } else {
-            sqlQuery = `
-                SELECT 
-                    DATE_FORMAT(r.Sensor_Timestamp, '${dateFormat}') AS Interval_Timestamp,
-                    ${calculationMethod}(r.Sensor_Value) AS Calculated_Reading
-                FROM Readings r
-                WHERE r.Sensor_ID = ?
-                  AND r.Board_ID = ?
-                  AND r.Sensor_Timestamp BETWEEN ? AND ?
-                  AND r.Error_ID = 0
-                GROUP BY Interval_Timestamp
-                ORDER BY Interval_Timestamp DESC;
-            `;
+            if (interval === 'Hourly') {
+                sqlQuery = `
+                    SELECT 
+                        r.Hourly_Timestamp AS Interval_Timestamp,
+                        ${calculationMethod}(r.Sensor_Value) AS Calculated_Reading
+                    FROM Readings r
+                    WHERE r.Sensor_ID = ?
+                      AND r.Board_ID = ?
+                      AND r.Sensor_Timestamp BETWEEN ? AND ?
+                      AND r.Error_ID = 0
+                    GROUP BY r.Hourly_Timestamp;
+                `;
+            } else { // Daily
+                sqlQuery = `
+                    SELECT 
+                        r.Daily_Timestamp AS Interval_Timestamp,
+                        ${calculationMethod}(r.Sensor_Value) AS Calculated_Reading
+                    FROM Readings r
+                    WHERE r.Sensor_ID = ?
+                      AND r.Board_ID = ?
+                      AND r.Sensor_Timestamp BETWEEN ? AND ?
+                      AND r.Error_ID = 0
+                    GROUP BY r.Daily_Timestamp;
+                `;
+            }
         }
 
         // Execute the query
         const [results] = await db.execute<mysql.RowDataPacket[]>(sqlQuery, [sensorId, boardId, startTimeFormatted, endTimeFormatted]);
 
-
-        // const convertedResults = results.map((row) => convertToImperial(parseFloat((row as { Calculated_Reading: string }).Calculated_Reading), units));
-
-
         const convertedResults = results.map(row => {
-            const calculatedReading = row.Calculated_Reading ?? 0; // Default to 0 if undefined
-            const unit = units || ''; // Default to empty string if undefined
+            const calculatedReading = row.Calculated_Reading ?? 0;
             let convertedValue = calculatedReading;
 
             if (useImperial !== '0') {
-                convertedValue = convertToImperial(calculatedReading, unit);
-            }
-            else {
-                convertedValue = convertDefault(calculatedReading, unit);
+                convertedValue = convertToImperial(calculatedReading, units);
+            } else {
+                convertedValue = convertDefault(calculatedReading, units);
             }
 
             if (sensorId == 10) {
                 if (boardId == "0xa8610a3436268316") {
-                    convertedValue = 100 - ((calculatedReading - 40) / 188 * 100)
-                }
-                else {
-                    convertedValue = 100 - ((calculatedReading - 74) / 224 * 100)
+                    convertedValue = ((145 - (calculatedReading - 40)) / 145 * 100);
+                } else {
+                    convertedValue = ((145 - (calculatedReading - 60)) / 145 * 100);
                 }
             }
 
             return {
                 ...row,
                 Calculated_Reading: convertedValue,
-                Units: useImperial !== '0' ? getImperialUnit(unit) : unit
+                Units: useImperial !== '0' ? getImperialUnit(units) : units
             };
-
         });
 
         // Return the results
@@ -194,7 +211,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 // Helper functions for unit labels
-
 function getImperialUnit(metricUnit: string): string {
     switch (metricUnit) {
         case '°C': return '°F';

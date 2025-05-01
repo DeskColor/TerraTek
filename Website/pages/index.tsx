@@ -29,32 +29,32 @@ const Dashboard = () => {
     };
 
     const weatherImages: { [key: number]: string } = {
-        0: "/Weather_Images/110805_sun_icon.svg",
-        1: "/Weather_Images/9044965_partly_cloudy_icon.svg",
-        2: "/Weather_Images/9044965_partly_cloudy_icon.svg",
-        3: "/Weather_Images/198562_partly cloud_sun_sunny_grey_clody_icon.svg",
-        45: "/Weather_Images/390496_cloud_fog_sun_icon.svg",
-        48: "/Weather_Images/390496_cloud_fog_sun_icon.svg",
-        51: "/Weather_Images/5719164_cloud_drizzle_rain_icon.svg",
-        53: "/Weather_Images/5719156_cloud_rain_icon.svg",
-        55: "/Weather_Images/5719160_cloud_heavy_rain_icon.svg",
-        61: "/Weather_Images/5719164_cloud_drizzle_rain_icon.svg",
+        0: "/Weather_Images/sun_icon.svg",
+        1: "/Weather_Images/partly_cloudy_icon.svg",
+        2: "/Weather_Images/partly_cloudy_icon.svg",
+        3: "/Weather_Images/partly_cloud_icon.svg",
+        45: "/Weather_Images/fog_sun_weather_icon.svg",
+        48: "/Weather_Images/fog_sun_weather_icon.svg",
+        51: "/Weather_Images/drizzle_rain_icon.svg",
+        53: "/Weather_Images/cloud_rain_icon.svg",
+        55: "/Weather_Images/heavy_rain_icon.svg",
+        61: "/Weather_Images/drizzle_rain_icon.svg",
         63: "/Weather_Images/5719156_cloud_rain_icon.svg",
-        65: "/Weather_Images/5719160_cloud_heavy_rain_icon.svg",
-        71: "/Weather_Images/8520293_snowflake_icon.svg",
-        73: "/Weather_Images/8520293_snowflake_icon.svg",
-        75: "/Weather_Images/8520293_snowflake_icon.svg",
-        80: "/Weather_Images/5719164_cloud_drizzle_rain_icon.svg",
-        81: "/Weather_Images/5719156_cloud_rain_icon.svg",
-        82: "/Weather_Images/5719160_cloud_heavy_rain_icon.svg",
-        95: "/Weather_Images/9045272_thunderstorm_icon.svg",
-        96: "/Weather_Images/9045272_thunderstorm_icon.svg",
-        99: "/Weather_Images/9045272_thunderstorm_icon.svg",
+        65: "/Weather_Images/heavy_rain_icon.svg",
+        71: "/Weather_Images/snowflake_icon.svg",
+        73: "/Weather_Images/snowflake_icon.svg",
+        75: "/Weather_Images/snowflake_icon.svg",
+        80: "/Weather_Images/drizzle_rain_icon.svg",
+        81: "/Weather_Images/cloud_rain_icon.svg",
+        82: "/Weather_Images/heavy_rain_icon.svg",
+        95: "/Weather_Images/thunderstorm_icon.svg",
+        96: "/Weather_Images/thunderstorm_icon.svg",
+        99: "/Weather_Images/thunderstorm_icon.svg",
     };
 
     const getWeatherImage = (code: number | undefined): string => {
         const codeNumber = Number(code); // Ensure it's a number
-        return codeNumber in weatherImages ? weatherImages[codeNumber] : "/Weather_Images/2849810_cross_multimedia_error_delite_icon.svg";
+        return codeNumber in weatherImages ? weatherImages[codeNumber] : "/Weather_Images/error_icon.svg";
     };
 
 
@@ -138,14 +138,13 @@ const Dashboard = () => {
     const sensor_Pressure = "4"
 
     const aggregation = "AVG"; // AVG, MIN, MAX, MEDIAN, SUM
-    const interval = "Hourly"; // Options: "All", "Hourly", "Daily"
     const units = 1;
 
     useEffect(() => {
         const fetchFreshWater1Data = async () => {
             try {
                 const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}&unit_conversion=${units}`
+                    `/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=10&calc=AVG&timeinterval=Daily`
                 );
 
                 if (!response.ok) {
@@ -166,7 +165,7 @@ const Dashboard = () => {
         const fetchFreshWater2Data = async () => {
             try {
                 const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}&unit_conversion=${units}`
+                    `/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=10&calc=AVG&timeinterval=Daily`
                 );
 
                 if (!response.ok) {
@@ -187,7 +186,7 @@ const Dashboard = () => {
         const fetchFreshWater3Data = async () => {
             try {
                 const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}&unit_conversion=${units}`
+                    `/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=10&calc=AVG&timeinterval=Daily`
                 );
 
                 if (!response.ok) {
@@ -210,7 +209,7 @@ const Dashboard = () => {
         const fetchGreyWaterData = async () => {
             try {
                 const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board_greywater}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}&unit_conversion=${units}`
+                    `/api/fetchdata/sensor-data?board=${board_greywater}&sensor=10&calc=AVG&timeinterval=Daily`
                 );
 
                 if (!response.ok) {
@@ -259,7 +258,6 @@ const Dashboard = () => {
             setTempData(temp?.length > 0 ? parseFloat(temp[0].Calculated_Reading) : null);
             setWSData(speed?.length > 0 ? parseFloat(speed[0].Calculated_Reading) : null);
             setWDData(direction?.length > 0 ? parseFloat(direction[0].Calculated_Reading) : null);
-            // setHumdityData(humidity?.length > 0 ? parseFloat(humidity[0].Calculated_Reading) : null);
             console.log(humidity)
             setPressureData(pressure?.length > 0 ? parseFloat(pressure[0].Calculated_Reading) : null);
 
@@ -298,16 +296,7 @@ const Dashboard = () => {
 
 
 
-    // Conversion helper functions
-    // function celsiusToFahrenheit(celsius: number): number {
-    //     return (celsius * 9) / 5 + 32;
-    // }
-    // function kphToMph(kph: number): number {
-    //     return kph * 0.621371;
-    // }
-    // Reverse wind direction by adding 180° before converting to cardinal direction.
     function convertWindDirection(degree: number): string {
-        // const reversedDegree = (degree + 180) % 360;
         const directions = [
             "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
             "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
@@ -316,7 +305,7 @@ const Dashboard = () => {
         return directions[index];
     }
 
-    const waterLevel = Math.round(waterLevelData ?? 0);
+    const waterLevel1 = Math.round(waterLevelData ?? 0);
     const waterLevel2 = Math.round(waterLevel2Data ?? 0);
     const waterLevel3 = Math.round(waterLevel3Data ?? 0);
     const greyWaterLevel = Math.min(greyLevelData ?? 0);
@@ -395,6 +384,7 @@ const Dashboard = () => {
                 data={[
                     {
                         type: "scatter",
+                        fill: 'tozeroy',
                         mode: "lines+markers", // Use lines for better trend visualization
                         x: xValues,
                         y: yValues,
@@ -429,6 +419,7 @@ const Dashboard = () => {
                 data={[
                     {
                         type: "scatter",
+                        fill: 'tozeroy',
                         mode: "lines+markers", // Use lines for better trend visualization
                         x: xValues,
                         y: yValues,
@@ -463,6 +454,7 @@ const Dashboard = () => {
                 data={[
                     {
                         type: "scatter",
+                        fill: 'tozeroy',
                         mode: "lines+markers", // Use lines for better trend visualization
                         x: xValues,
                         y: yValues,
@@ -497,6 +489,7 @@ const Dashboard = () => {
                 data={[
                     {
                         type: "scatter",
+                        fill: 'tozeroy',
                         mode: "lines+markers", // Use lines for better trend visualization
                         x: xValues,
                         y: yValues,
@@ -528,7 +521,7 @@ const Dashboard = () => {
                 {/* Fresh Water 1 Section */}
                 <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
                     <h2 className="text-center text-xl font-semibold font-mono">Fresh Water 1</h2>
-                    {renderLiquidGauge(waterLevel, "blue")}
+                    {renderLiquidGauge(waterLevel1, "blue")}
 
                     <div className="w-full mt-4">
                         <h3 className="text-md font-semibold font-mono">Fresh Water 1 Scatter Plot</h3>
@@ -551,7 +544,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Fresh Water 1 Section */}
+                {/* Fresh Water 2 Section */}
                 <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
                     <h2 className="text-center text-xl font-semibold font-mono">Fresh Water 2</h2>
                     {renderLiquidGauge(waterLevel2, "blue")}
@@ -564,7 +557,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Fresh Water 1 Section */}
+                {/* Fresh Water 3 Section */}
                 <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
                     <h2 className="text-center text-xl font-semibold font-mono">Fresh Water 3</h2>
                     {renderLiquidGauge(waterLevel3, "blue")}
@@ -601,17 +594,17 @@ const Dashboard = () => {
                                     <p>{getWeatherDescription(weather.weathercode)}</p>
 
                                     <div className="flex items-center gap-2">
-                                        <Image src={"/Weather_Images/9040596_sunrise_icon.svg"} width={30} height={30} alt="Sunrise" />
+                                        <Image src={"/Weather_Images/sunrise_icon.svg"} width={30} height={30} alt="Sunrise" />
                                         <p>Sunrise: {formatTimeToNazareth(weather.sunrise)}</p>
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Image src={"/Weather_Images/8666700_sunset_icon.svg"} width={30} height={30} alt="Sunset" />
+                                        <Image src={"/Weather_Images/sunset_icon.svg"} width={30} height={30} alt="Sunset" />
                                         <p>Sunset: {formatTimeToNazareth(weather.sunset)}</p>
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Image src={"/Weather_Images/727683_rain_water_cloud_drop_forecast_icon.svg"} width={30} height={30} alt="Precipitation" />
+                                        <Image src={"/Weather_Images/rain_water_cloud_icon.svg"} width={30} height={30} alt="Precipitation" />
                                         <p>Precipitation: {weather.precipitation_probability_max}%</p>
                                     </div>
                                 </div>
@@ -621,27 +614,23 @@ const Dashboard = () => {
                                     <strong className="text-lg">Current:</strong>
 
                                     <div className="flex items-center gap-2">
-                                        <Image src={"/Weather_Images/8665892_temperature_half_icon.svg"} width={25} height={25} alt="Temperature" />
+                                        <Image src={"/Weather_Images/temperature_icon.svg"} width={25} height={25} alt="Temperature" />
                                         <p>Temperature: {TempData ? TempData.toFixed(2) : "Loading..."} °F</p>
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Image src={"/Weather_Images/9024034_wind_fill_icon.svg"} width={30} height={30} alt="Wind Speed" />
+                                        <Image src={"/Weather_Images/wind_fill_icon.svg"} width={30} height={30} alt="Wind Speed" />
                                         <p>Wind Speed: {WSData ? WSData.toFixed(2) : "Loading..."} mph</p>
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Image src={"/Weather_Images/8875188_wind_direction_arrow_icon.svg"} width={30} height={30} alt="Wind Direction" />
+                                        <Image src={"/Weather_Images/wind_arrow_icon.svg"} width={30} height={30} alt="Wind Direction" />
                                         <p>Wind Direction: {WDData ? convertWindDirection(WDData) : "Loading..."}</p>
                                     </div>
 
-                                    {/* <div className="flex items-center gap-2">
-              <Image src={"/Weather_Images/9132537_humidity_air conditining_ac_conditioner_split ac_icon.svg"} width={30} height={30} alt="Humidity" />
-              <p>Humidity: {HumdityData ? HumdityData.toFixed(2) : "Loading..."} %</p>
-            </div> */}
 
                                     <div className="flex items-center gap-2">
-                                        <Image src={"/Weather_Images/809411_gauge_indication_indicator_miscellaneous_pressure_icon.svg"} width={30} height={30} alt="Pressure" />
+                                        <Image src={"/Weather_Images/gauge_pressure_icon.svg"} width={30} height={30} alt="Pressure" />
                                         <p>Pressure: {PressureData ? PressureData.toFixed(2) : "Loading..."} inHg</p>
                                     </div>
                                 </div>

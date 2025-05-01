@@ -365,7 +365,7 @@ const HealthPage = () => {
                                     value: rateFresh1,
                                     gauge: {
                                         bar: { color: "darkGreen" },
-                                        axis: { range: [570, 670] },
+                                        axis: { range: [490, 590] },
                                         steps: [
                                             { range: [490, 520], color: "lightgray" },
                                             { range: [520, 560], color: "lightGreen" },
@@ -428,7 +428,7 @@ const HealthPage = () => {
                                     value: rateFresh2,
                                     gauge: {
                                         bar: { color: "darkGreen" },
-                                        axis: { range: [130, 230] },
+                                        axis: { range: [180, 280] },
                                         steps: [
                                             { range: [180, 210], color: "lightgray" },
                                             { range: [210, 250], color: "lightGreen" },
@@ -491,7 +491,7 @@ const HealthPage = () => {
                                     value: rateFresh3,
                                     gauge: {
                                         bar: { color: "darkGreen" },
-                                        axis: { range: [130, 230] },
+                                        axis: { range: [180, 280] },
                                         steps: [
                                             { range: [180, 210], color: "lightgray" },
                                             { range: [210, 250], color: "lightGreen" },
@@ -554,7 +554,7 @@ const HealthPage = () => {
                                     value: rateGrey,
                                     gauge: {
                                         bar: { color: "darkGreen" },
-                                        axis: { range: [570, 670] },
+                                        axis: { range: [530, 630] },
                                         steps: [
                                             { range: [530, 560], color: "lightgray" },
                                             { range: [560, 600], color: "lightGreen" },
@@ -608,7 +608,7 @@ const HealthPage = () => {
             </div>
             {/* Transmission Rate */}
             <div className="p-4 h-full lg:col-span-4 col-span-1 row-span-1 bg-slate-100 shadow-sm rounded-md flex flex-col">
-                <h1 className="text-center text-xl font-semibold font-mono">Transmission Rate</h1>
+                <h1 className="text-center text-xl font-semibold font-mono">Transmission Rate (Past Month)</h1>
                 <div className="w-full h-full">
                     <PlotlyComponent
                         data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', name: "Transmissions Per Hour" }]}
@@ -628,9 +628,9 @@ const HealthPage = () => {
                     />
                 </div>
             </div>
-            {/* Data Rate */}
+            {/* Sensor List */}
             <div className="p-4 lg:h-full md:h-[calc(100vh-50px)] md:row-span-2 row-span-1 bg-slate-100 shadow-sm rounded-md flex-grow block lg:hidden">
-                <h1 className="text-center text-xl font-semibold font-mono">Sensor List</h1>
+                <h1 className="text-center text-xl font-semibold font-mono">Sensor List (Past Month)</h1>
                 <div className="md:overflow-scroll" style={{ maxHeight: '95%' }}>
                     {datasetAll.length > 0 ? (datasetAll.map((data, index) => (
                         <div key={index} className={`p-2 border-b border-gray-200 ${data.Online ? "bg-green-300" : "bg-red-300"}`}>

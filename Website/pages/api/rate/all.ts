@@ -19,12 +19,27 @@ export default async function handler(
 ): Promise<void> {
     try {
 
-        const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT s.Sensor_Description, b.Board_Description, COUNT(*) AS Count, MAX(CASE WHEN r.Sensor_Timestamp > NOW() - INTERVAL 5 MINUTE THEN 1 ELSE 0 END) AS Online
-                                                                        FROM Readings r
-                                                                    JOIN Sensors s ON r.Sensor_ID = s.Sensor_ID
-                                                                    JOIN Boards b ON r.Board_ID = b.Board_ID
-                                                                    GROUP BY s.Sensor_ID, b.Board_ID, s.Sensor_Description, b.Board_Description
-                                                                    ORDER BY Count DESC;`);
+        const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT 
+                                                                    s.Sensor_Description, 
+                                                                    b.Board_Description, 
+                                                                    r.Count, 
+                                                                CASE 
+                                                                    WHEN r.RecentReading = 1 AND r.HasError = 0 THEN 1 
+                                                                    ELSE 0 
+                                                                    END AS Online
+                                                                FROM (
+                                                                    SELECT 
+                                                                    r.Sensor_ID, 
+                                                                    r.Board_ID, 
+                                                                    COUNT(*) AS Count, 
+                                                                    MAX(CASE WHEN r.Sensor_Timestamp > NOW() - INTERVAL 5 MINUTE THEN 1 ELSE 0 END) AS RecentReading,
+                                                                    MAX(CASE WHEN r.Sensor_Timestamp >= NOW() - INTERVAL 1 HOUR AND r.Error_ID > 0 THEN 1 ELSE 0 END) AS HasError
+                                                                FROM Readings r
+                                                                    WHERE r.Sensor_Timestamp >= NOW() - INTERVAL 168 HOUR
+                                                                    GROUP BY r.Sensor_ID, r.Board_ID
+                                                                    ) r
+                                                                JOIN Sensors s ON r.Sensor_ID = s.Sensor_ID
+                                                                JOIN Boards b ON r.Board_ID = b.Board_ID;`);
         res.status(200).json(results);
     } catch (err) {
         console.error('Error connecting to the database or fetching data:', err);
