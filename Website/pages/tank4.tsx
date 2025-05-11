@@ -423,12 +423,12 @@ fetchHistoricalTankData();
             <div className="bg-slate-100 shadow-sm rounded-md p-2 col-span-1 lg:col-span-2 h-full flex flex-col">
               <h2 className="text-center text-lg sm:text-xl font-semibold font-mono">Tank Location</h2>
               <div className="relative h-64 sm:h-96 w-full flex justify-center items-center">
-                <Image
-                  src="/Tank_Images/gw.png"
-                  alt="Tank Location"
-                  fill
-                  style={{ objectFit: "contain" }}
-                />
+              <Image
+                src="/Tank_Images/GreyWaterTankNewImage.jpg"
+                alt="Greywater Tank Location"
+                fill
+                style={{ objectFit: "contain" }}
+              />
               </div>
             </div>
           </div>

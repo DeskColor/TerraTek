@@ -39,7 +39,7 @@ const Dashboard = () => {
         53: "/Weather_Images/cloud_rain_icon.svg",
         55: "/Weather_Images/heavy_rain_icon.svg",
         61: "/Weather_Images/drizzle_rain_icon.svg",
-        63: "/Weather_Images/5719156_cloud_rain_icon.svg",
+        63: "/Weather_Images/cloud_rain_icon.svg",
         65: "/Weather_Images/heavy_rain_icon.svg",
         71: "/Weather_Images/snowflake_icon.svg",
         73: "/Weather_Images/snowflake_icon.svg",
@@ -103,6 +103,7 @@ const Dashboard = () => {
     const [WDData, setWDData] = useState<number | null>(null);
     // const [HumdityData, setHumdityData] = useState<number | null>(null);
     const [PressureData, setPressureData] = useState<number | null>(null);
+    const [RainData, setRainData] = useState<number | null>(null);
 
     // Helper: Format a time string to Nazareth, TX local time ("America/Chicago")
     function formatTimeToNazareth(timeString: string): string {
@@ -136,110 +137,70 @@ const Dashboard = () => {
     const sensor_WindD = "7"
     const sensor_Humidity = "3"
     const sensor_Pressure = "4"
+    const sensor_Rain = "8"
 
     const aggregation = "AVG"; // AVG, MIN, MAX, MEDIAN, SUM
+    const interval = "Hourly"; // Options: "All", "Hourly", "Daily"
     const units = 1;
 
     useEffect(() => {
-        const fetchFreshWater1Data = async () => {
+        const fetchAllWaterData = async () => {
             try {
-                const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=10&calc=AVG&timeinterval=Daily`
-                );
+                const [
+                    freshWater1Response,
+                    freshWater2Response,
+                    freshWater3Response,
+                    greyWaterResponse,
+                ] = await Promise.all([
+                    fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeinterval=${interval}&unit_conversion=${units}`),
+                    fetch(`/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeinterval=${interval}&unit_conversion=${units}`),
+                    fetch(`/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeinterval=${interval}&unit_conversion=${units}`),
+                    fetch(`/api/fetchdata/sensor-data?board=${board_greywater}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeinterval=${interval}&unit_conversion=${units}`),
+                ]);
 
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch data: ${response.statusText}`);
+                if (!freshWater1Response.ok || !freshWater2Response.ok || !freshWater3Response.ok || !greyWaterResponse.ok) {
+                    throw new Error("Failed to fetch one or more water data sets.");
                 }
 
-                const data: SensorReading[] = await response.json();
-                setFreshWater1Data(data);
+                const [
+                    freshWater1Data,
+                    freshWater2Data,
+                    freshWater3Data,
+                    greyWaterData,
+                ] = await Promise.all([
+                    freshWater1Response.json(),
+                    freshWater2Response.json(),
+                    freshWater3Response.json(),
+                    greyWaterResponse.json(),
+                ]);
+
+                setFreshWater1Data(freshWater1Data);
+                setFreshWater2Data(freshWater2Data);
+                setFreshWater3Data(freshWater3Data);
+                setGreyWaterData(greyWaterData);
             } catch (error) {
-                console.error("Error fetching fresh water data:", error);
+                console.error("Error fetching water data:", error);
             }
         };
 
-        fetchFreshWater1Data();
-    }, [time]);
-
-    useEffect(() => {
-        const fetchFreshWater2Data = async () => {
-            try {
-                const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=10&calc=AVG&timeinterval=Daily`
-                );
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch data: ${response.statusText}`);
-                }
-
-                const data: SensorReading[] = await response.json();
-                setFreshWater2Data(data);
-            } catch (error) {
-                console.error("Error fetching fresh water data:", error);
-            }
-        };
-
-        fetchFreshWater2Data();
-    }, [time]);
-
-    useEffect(() => {
-        const fetchFreshWater3Data = async () => {
-            try {
-                const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=10&calc=AVG&timeinterval=Daily`
-                );
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch data: ${response.statusText}`);
-                }
-
-                const data: SensorReading[] = await response.json();
-                setFreshWater3Data(data);
-            } catch (error) {
-                console.error("Error fetching fresh water data:", error);
-            }
-        };
-
-        fetchFreshWater3Data();
-    }, [time]);
-
-
-
-    useEffect(() => {
-        const fetchGreyWaterData = async () => {
-            try {
-                const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board_greywater}&sensor=10&calc=AVG&timeinterval=Daily`
-                );
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch data: ${response.statusText}`);
-                }
-
-                const data: SensorReading[] = await response.json();
-                setGreyWaterData(data);
-            } catch (error) {
-                console.error("Error fetching fresh water data:", error);
-            }
-        };
-
-        fetchGreyWaterData();
-    }, [time]);
+        fetchAllWaterData();
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
-            const [tempReading, speedReading, directionReading, humidityReading, pressureReading, freshWater1Reading, freshWater2Reading, freshWater3Reading, greyWaterReading] = await Promise.all([
+            const [tempReading, speedReading, directionReading, humidityReading, pressureReading, rainReading, freshWater1Reading, freshWater2Reading, freshWater3Reading, greyWaterReading] = await Promise.all([
 
                 fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Temp}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`),  // Temp
                 fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindS}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`),  // Wind Speed
                 fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindD}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`),  // Wind Direction
                 fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Humidity}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`),  // Humidity
                 fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Pressure}&calc=${aggregation}&timeframe=1&unit_conversion=${units}`), // Pressure
+                fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Rain}&calc=SUM&start=${time.start}&end=${time.end}&timeinterval=Daily&unit_conversion=${units}`), // Pressure
 
-                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&timeframe=1`), // Water Level1
-                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=${sensor_WaterLevel}&timeframe=1`), // Water Level 2
-                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=${sensor_WaterLevel}&timeframe=1`), // Water Level 3
-                fetch(`/api/fetchdata/sensor-data?board=${board_greywater}&sensor=${sensor_WaterLevel}&timeframe=1`), // Water Level 3
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=10&calc=AVG&timeinterval=Daily`), // Water Level1
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=10&calc=AVG&timeinterval=Daily`), // Water Level 2
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=10&calc=AVG&timeinterval=Daily`), // Water Level 3
+                fetch(`/api/fetchdata/sensor-data?board=${board_greywater}&sensor=10&calc=AVG&timeinterval=Daily`), // Water Level 3
             ]);
 
             // Parse the JSON from each response
@@ -248,6 +209,7 @@ const Dashboard = () => {
             const direction = await directionReading.json();
             const humidity = await humidityReading.json();
             const pressure = await pressureReading.json();
+            const rain = await rainReading.json();
 
             const freshWater1 = await freshWater1Reading.json();
             const freshWater2 = await freshWater2Reading.json();
@@ -261,6 +223,8 @@ const Dashboard = () => {
             console.log(humidity)
             setPressureData(pressure?.length > 0 ? parseFloat(pressure[0].Calculated_Reading) : null);
 
+            setRainData(rain?.length > 0 ? rain.reduce((acc: number, curr: { Calculated_Reading: string }) => acc + parseFloat(curr.Calculated_Reading), 0) : null);
+
             setWaterLevelData(freshWater1?.length > 0 ? parseFloat(freshWater1[0].Calculated_Reading) : null);
             setWaterLevel2Data(freshWater2?.length > 0 ? parseFloat(freshWater2[0].Calculated_Reading) : null);
             setWaterLevel3Data(freshWater3?.length > 0 ? parseFloat(freshWater3[0].Calculated_Reading) : null);
@@ -268,7 +232,7 @@ const Dashboard = () => {
         };
 
         fetchData();
-    }, []);
+    }, [time.end, time.start]);
 
 
     useEffect(() => {
@@ -376,7 +340,9 @@ const Dashboard = () => {
         if (!freshWater1Data) return <div>Loading sensor data...</div>;
         if (freshWater1Data.length === 0) return <div>No Fresh Water data available.</div>;
 
-        const xValues = freshWater1Data.map((reading) => reading.Interval_Timestamp); // Updated field
+        const xValues = freshWater1Data.map((reading) =>
+            new Date(reading.Interval_Timestamp).toLocaleString("en-US", { timeZone: "America/Chicago" })
+        ); // Updated field
         const yValues = freshWater1Data.map((reading) => reading.Calculated_Reading); // Updated field
 
         return (
@@ -394,8 +360,8 @@ const Dashboard = () => {
                 ]}
                 layout={{
                     autosize: true,
-                    margin: { t: 20, r: 20, l: 40, b: 40 },
-                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    margin: { t: 20, r: 40, l: 40, b: 150 },
+                    xaxis: { title: "Timestamp", tickformat: '%m/%d %I:%M %p',tickangle: -60 }, // Format x-axis as date
                     yaxis: { title: "Fresh Water Level (AVG)" },
                     paper_bgcolor: '#f1f5f9',
                     plot_bgcolor: '#f1f5f9',
@@ -411,7 +377,9 @@ const Dashboard = () => {
         if (!freshWater2Data) return <div>Loading sensor data...</div>;
         if (freshWater2Data.length === 0) return <div>No Fresh Water data available.</div>;
 
-        const xValues = freshWater2Data.map((reading) => reading.Interval_Timestamp); // Updated field
+        const xValues = freshWater2Data.map((reading) =>
+            new Date(reading.Interval_Timestamp).toLocaleString("en-US", { timeZone: "America/Chicago" })
+        ); // Updated field
         const yValues = freshWater2Data.map((reading) => reading.Calculated_Reading); // Updated field
 
         return (
@@ -429,8 +397,8 @@ const Dashboard = () => {
                 ]}
                 layout={{
                     autosize: true,
-                    margin: { t: 20, r: 20, l: 40, b: 40 },
-                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    margin: { t: 20, r: 40, l: 40, b: 150 },
+                    xaxis: { title: "Timestamp", tickformat: '%m/%d %I:%M %p',tickangle: -60 }, // Format x-axis as date
                     yaxis: { title: "Fresh Water Level (AVG)" },
                     paper_bgcolor: '#f1f5f9',
                     plot_bgcolor: '#f1f5f9',
@@ -446,7 +414,9 @@ const Dashboard = () => {
         if (!freshWater3Data) return <div>Loading sensor data...</div>;
         if (freshWater3Data.length === 0) return <div>No Fresh Water data available.</div>;
 
-        const xValues = freshWater3Data.map((reading) => reading.Interval_Timestamp); // Updated field
+        const xValues = freshWater3Data.map((reading) =>
+            new Date(reading.Interval_Timestamp).toLocaleString("en-US", { timeZone: "America/Chicago" })
+        ); // Updated field
         const yValues = freshWater3Data.map((reading) => reading.Calculated_Reading); // Updated field
 
         return (
@@ -464,8 +434,8 @@ const Dashboard = () => {
                 ]}
                 layout={{
                     autosize: true,
-                    margin: { t: 20, r: 20, l: 40, b: 40 },
-                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    margin: { t: 20, r: 40, l: 40, b: 150 },
+                    xaxis: { title: "Timestamp", tickformat: '%m/%d %I:%M %p',tickangle: -60 }, // Format x-axis as date
                     yaxis: { title: "Fresh Water Level (AVG)" },
                     paper_bgcolor: '#f1f5f9',
                     plot_bgcolor: '#f1f5f9',
@@ -481,7 +451,9 @@ const Dashboard = () => {
         if (!greyWaterData) return <div>Loading sensor data...</div>;
         if (greyWaterData.length === 0) return <div>No Fresh Water data available.</div>;
 
-        const xValues = greyWaterData.map((reading) => reading.Interval_Timestamp); // Updated field
+        const xValues = greyWaterData.map((reading) =>
+            new Date(reading.Interval_Timestamp).toLocaleString("en-US", { timeZone: "America/Chicago" })
+        ); // Updated field
         const yValues = greyWaterData.map((reading) => reading.Calculated_Reading); // Updated field
 
         return (
@@ -499,8 +471,8 @@ const Dashboard = () => {
                 ]}
                 layout={{
                     autosize: true,
-                    margin: { t: 20, r: 20, l: 40, b: 40 },
-                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    margin: { t: 20, r: 40, l: 40, b: 150 },
+                    xaxis: { title: "Timestamp", tickformat: '%m/%d %I:%M %p',tickangle: -60 }, // Format x-axis as date
                     yaxis: { title: "Fresh Water Level (AVG)" },
                     paper_bgcolor: '#f1f5f9',
                     plot_bgcolor: '#f1f5f9',
@@ -510,6 +482,10 @@ const Dashboard = () => {
                 style={{ width: "100%", height: "300px" }} // Increased height for better visibility
             />
         );
+    }
+
+    function calculateGallons(){
+        return greyWaterLevel/100 * 3750 + waterLevel1/100 * 3750 + waterLevel2/100 * 1250 + waterLevel3/100 * 1250;
     }
 
 
@@ -611,7 +587,7 @@ const Dashboard = () => {
 
                                 {/* Current Weather */}
                                 <div className="flex flex-col items-center">
-                                    <strong className="text-lg">Current:</strong>
+                                    <strong className="text-lg">Current conditions using on-site sensors:</strong>
 
                                     <div className="flex items-center gap-2">
                                         <Image src={"/Weather_Images/temperature_icon.svg"} width={25} height={25} alt="Temperature" />
@@ -632,6 +608,16 @@ const Dashboard = () => {
                                     <div className="flex items-center gap-2">
                                         <Image src={"/Weather_Images/gauge_pressure_icon.svg"} width={30} height={30} alt="Pressure" />
                                         <p>Pressure: {PressureData ? PressureData.toFixed(2) : "Loading..."} inHg</p>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Image src={"/Weather_Images/rain_water_cloud_icon.svg"} width={30} height={30} alt="Rain" />
+                                        <p>Total rainfall past 30 days: {RainData ? RainData.toFixed(2) : "Loading..."} in</p>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        {/* <Image src={"/Weather_Images/rain_water_cloud_icon.svg"} width={30} height={30} alt="Rain" /> */}
+                                        <p>Total water in system (approximate): {calculateGallons().toFixed(2)} gallons</p>
                                     </div>
                                 </div>
                             </div>

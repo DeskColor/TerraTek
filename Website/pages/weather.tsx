@@ -95,7 +95,7 @@ const Weather: NextPage = () => {
   const [forecast, setForecast] = useState<Forecast | null>(null);
   type SensorType = "Wind Speed" | "Wind Direction" | "Humidity" | "Pressure" | "Temperature" | "Luminescence" | "Rainfall";
   const [selectedSensor, setSelectedSensor] = useState<SensorType>("Wind Speed");
-  const [forecastPeriod, setForecastPeriod] = useState<string>("7 Day Forecast");
+  const [forecastPeriod, setForecastPeriod] = useState<string>("Forecast");
   const location = "Amarillo"; // Default location
 
   const API_KEY = "cd1abd4ac4484d84b5455301251903"; // WeatherAPI key
@@ -168,10 +168,10 @@ const Weather: NextPage = () => {
           fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindS}&calc=${aggregation}&timeframe=1`),
           fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindD}&calc=${aggregation}&timeframe=1`),
           fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Humidity}&calc=${aggregation}&timeframe=1`),
-          fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_Pressure}&calc=${aggregation}&timeframe=1`),
+          fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Pressure}&calc=${aggregation}&timeframe=1`),
           fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Temp}&calc=${aggregation}&timeframe=1`),
-          fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_Luminescence}&calc=${aggregation}&timeframe=1`),
-          fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Rainfall}&calc=${aggregation}&timeframe=1`),
+          fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Luminescence}&calc=${aggregation}&timeframe=1`),
+          fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Rainfall}&calc=SUM&timeframe=1&interval=Daily`),
         ]);
 
         // Define the expected structure of the response
@@ -389,9 +389,6 @@ const Weather: NextPage = () => {
           break;
         case "3 Day Forecast":
           forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location}&days=3`;
-          break;
-        case "7 Day Forecast":
-          forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location}&days=7`;
           break;
         default:
           forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location}&days=7`;
@@ -854,11 +851,11 @@ const Weather: NextPage = () => {
                 )}
                 <strong className="text-lg">Current:</strong>
                 <div className="flex items-center gap-2">
-                  <Image src={"/Weather_Images/9024034_wind_fill_icon.svg"} width={30} height={30} alt="Wind Speed" />
+                  <Image src={"/Weather_Images/wind_fill_icon.svg"} width={30} height={30} alt="Wind Speed" />
                   <p>Wind Speed: {windSpeedData ? windSpeedData.toFixed(2) : "Loading..."} mph</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Image src={"/Weather_Images/8875188_wind_direction_arrow_icon.svg"} width={30} height={30} alt="Wind Direction" />
+                  <Image src={"/Weather_Images/wind_arrow_icon.svg"} width={30} height={30} alt="Wind Direction" />
                   <p>Wind Direction: {windDirData ? convertWindDirection(windDirData) : "Loading..."}</p>
                 </div>
               </div>
@@ -959,7 +956,6 @@ const Weather: NextPage = () => {
                 <DropdownMenu onAction={(key) => setForecastPeriod(key as string)}>
                   <DropdownItem key={"Hourly Forecast"}>Hourly Forecast</DropdownItem>
                   <DropdownItem key={"3 Day Forecast"}>3 Day Forecast</DropdownItem>
-                  <DropdownItem key={"7 Day Forecast"}>7 Day Forecast</DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             </div>

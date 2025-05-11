@@ -18,6 +18,7 @@ const HealthPage = () => {
         Board_Description: string;
         Count: number;
         Online: number;
+        Error: number;
     }>;
 
     type Online = {
@@ -255,7 +256,7 @@ const HealthPage = () => {
 
                 const rateAll = await all.json() as DataSetAll;
 
-
+                console.log(rateAll);
                 setDatasetAll(rateAll);
 
             } catch (error) {
@@ -273,10 +274,10 @@ const HealthPage = () => {
 
             {/* Data Rate */}
             <div className="p-4 lg:h-full md:h-[calc(100vh-50px)] md:row-span-3 bg-slate-100 shadow-sm rounded-md flex-grow lg:block hidden">
-                <h1 className="text-center text-xl font-semibold font-mono">Sensor List</h1>
+                <h1 className="text-center text-xl font-semibold font-mono">Sensor List (Past Month)</h1>
                 <div className="overflow-scroll" style={{ maxHeight: '95%' }}>
                     {datasetAll.length > 0 ? (datasetAll.map((data, index) => (
-                        <div key={index} className={`p-2 border-b border-gray-200 ${data.Online ? "bg-green-300" : "bg-red-300"}`}>
+                        <div key={index} className={`p-2 border-b border-gray-200 ${data.Online ? (data.Error ? "bg-yellow-300" : "bg-green-300") : "bg-red-300"}`}>
                             <p>Sensor: {data.Sensor_Description}</p>
                             <p>Board: {data.Board_Description}</p>
                             <p>Total Readings Received: {data.Count}</p>
@@ -633,7 +634,7 @@ const HealthPage = () => {
                 <h1 className="text-center text-xl font-semibold font-mono">Sensor List (Past Month)</h1>
                 <div className="md:overflow-scroll" style={{ maxHeight: '95%' }}>
                     {datasetAll.length > 0 ? (datasetAll.map((data, index) => (
-                        <div key={index} className={`p-2 border-b border-gray-200 ${data.Online ? "bg-green-300" : "bg-red-300"}`}>
+                        <div key={index} className={`p-2 border-b border-gray-200 ${data.Online ? (data.Error ? "bg-yellow-300" : "bg-green-300") : "bg-red-300"}`}>
                             <p>Sensor: {data.Sensor_Description}</p>
                             <p>Board: {data.Board_Description}</p>
                             <p>Total Readings Received: {data.Count}</p>
