@@ -30,7 +30,7 @@ const About = () => {
             </div> */}
 
             <div className="bg-slate-100 shadow-sm rounded-md p-2">
-                <h2 className="text-center text-xl font-semibold font-mono">Project Project Background</h2>
+                <h2 className="text-center text-xl font-semibold font-mono">Project Background</h2>
                 <p className="p-4 justify-center">
                 The TerraTek project originated from a local initiative in the Texas Panhandle, where a resident sought a rainwater harvesting system to address water scarcity and promote sustainable practices. Recognizing the critical need for innovative solutions in a region often affected by drought, multiple professors supported the development of TerraTek as part of a broader effort to implement systems that assist with water conservation and management.
                     <div className="grid justify-center mt-4 lg:grid-cols-2 sm:grid-cols-1">
