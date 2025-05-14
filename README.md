@@ -15,6 +15,8 @@ This paper explores the motivations behind the project, outlines the technical i
 
 # Project Implementation
 The working version of this system can be accessed at https://terratekrwh.com
+
+
 ![Playa Station Overhead](https://github.com/user-attachments/assets/99ce5a54-cdc4-43e1-9724-b84e52bf101a)
 ![DJI_20250429174744_0114_D](https://github.com/user-attachments/assets/a1a211d4-a258-4081-b601-5aad36bab02b)
 ![IMG_2902](https://github.com/user-attachments/assets/5e0f9663-f77b-46b0-81f0-4a6bc3833cf6)
